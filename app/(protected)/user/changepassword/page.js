@@ -1,88 +1,103 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { updatePassword } from "firebase/auth";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
+import { db } from "@/app/lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
-export default function ChangePasswordPage() {
+export default function ProfilePage() {
   const { user, loading } = useAuth();
 
-  const [newPass, setNewPass] = useState("");
-  const [newPass2, setNewPass2] = useState("");
-  const [msg, setMsg] = useState("");
-  const [err, setErr] = useState("");
+  const [street, setStreet] = useState("");
+  const [city, setCity] = useState("");
+  const [zipCode, setZipCode] = useState("");
 
+  const [info, setInfo] = useState("");
+  const [error, setError] = useState("");
+  const [dataLoading, setDataLoading] = useState(true);
+
+  // 🔹 ODCZYT danych z Firestore
+  useEffect(() => {
+    if (!user) return;
+
+    const loadProfile = async () => {
+      try {
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+
+        if (snap.exists()) {
+          const data = snap.data();
+          setStreet(data.address?.street || "");
+          setCity(data.address?.city || "");
+          setZipCode(data.address?.zipCode || "");
+        }
+      } catch (e) {
+        setError("Błąd odczytu danych z Firestore");
+      } finally {
+        setDataLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [user]);
+
+  // 🔹 ZAPIS danych do Firestore
   const onSubmit = async (e) => {
     e.preventDefault();
-    setMsg("");
-    setErr("");
-
-    if (!user) {
-      setErr("Brak zalogowanego użytkownika.");
-      return;
-    }
-
-    if (newPass.length < 6) {
-      setErr("Hasło musi mieć co najmniej 6 znaków.");
-      return;
-    }
-
-    if (newPass !== newPass2) {
-      setErr("Hasła nie są takie same.");
-      return;
-    }
+    setError("");
+    setInfo("");
 
     try {
-      await updatePassword(user, newPass);
-      setMsg("Hasło zostało zmienione ✅");
-      setNewPass("");
-      setNewPass2("");
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        address: {
+          street,
+          city,
+          zipCode,
+        },
+      });
+
+      setInfo("Dane zapisane poprawnie ✅");
     } catch (e) {
-      const code = e?.code || "";
-      if (code === "auth/requires-recent-login") {
-        setErr("Musisz zalogować się ponownie, żeby zmienić hasło (wyloguj i zaloguj się jeszcze raz).");
-      } else {
-        setErr(`Błąd: ${code || "nieznany"}`);
-      }
+      setError("Błąd zapisu danych");
     }
   };
 
-  if (loading) return <p>Ładowanie...</p>;
+  if (loading || dataLoading) return <p>Ładowanie profilu...</p>;
 
   return (
     <div className="max-w-md">
-      <h1 className="text-2xl font-bold mb-4">Zmień hasło</h1>
+      <h1 className="text-2xl font-bold mb-4">Profil użytkownika</h1>
 
-      <div className="mb-3">
-        <Link className="underline" href="/user/profile">
-          ← Profil
-        </Link>
-      </div>
+      <p className="mb-3 text-sm text-gray-400">
+        Email: <b>{user.email}</b>
+      </p>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-3">
         <input
-          type="password"
-          placeholder="Nowe hasło"
           className="border p-2"
-          value={newPass}
-          onChange={(e) => setNewPass(e.target.value)}
-          required
+          placeholder="Ulica"
+          value={street}
+          onChange={(e) => setStreet(e.target.value)}
         />
         <input
-          type="password"
-          placeholder="Powtórz nowe hasło"
           className="border p-2"
-          value={newPass2}
-          onChange={(e) => setNewPass2(e.target.value)}
-          required
+          placeholder="Miasto"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+        />
+        <input
+          className="border p-2"
+          placeholder="Kod pocztowy"
+          value={zipCode}
+          onChange={(e) => setZipCode(e.target.value)}
         />
 
-        {err && <p className="text-red-500">{err}</p>}
-        {msg && <p className="text-green-500">{msg}</p>}
+        {error && <p className="text-red-500">{error}</p>}
+        {info && <p className="text-green-500">{info}</p>}
 
         <button className="border p-2 bg-gray-900 text-white">
-          Zmień hasło
+          Zapisz dane
         </button>
       </form>
     </div>

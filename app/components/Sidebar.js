@@ -11,6 +11,7 @@ import {
   FaThLarge,
   FaQuestionCircle,
   FaEdit,
+  FaInfoCircle, // <-- DODANE
 } from "react-icons/fa";
 
 function SectionTitle({ children, collapsed }) {
@@ -63,18 +64,85 @@ export default function Sidebar({ collapsed = false, onNavigate }) {
 
       <nav className="px-2 pb-6">
         <SectionTitle collapsed={collapsed}>Ogólne</SectionTitle>
-        <NavItem href="/" icon={FaHome} label="Strona główna" active={isActive("/")} collapsed={collapsed} onNavigate={onNavigate} />
+        <NavItem
+          href="/"
+          icon={FaHome}
+          label="Strona główna"
+          active={isActive("/")}
+          collapsed={collapsed}
+          onNavigate={onNavigate}
+        />
 
         <SectionTitle collapsed={collapsed}>Konto</SectionTitle>
-        <NavItem href="/user/signin" icon={FaSignInAlt} label="Zaloguj" active={isActive("/user/signin")} collapsed={collapsed} onNavigate={onNavigate} />
-        <NavItem href="/user/register" icon={FaUserPlus} label="Rejestracja" active={isActive("/user/register")} collapsed={collapsed} onNavigate={onNavigate} />
-        <NavItem href="/user/profile" icon={FaUser} label="Profil" active={isActive("/user/profile")} collapsed={collapsed} onNavigate={onNavigate} />
-        <NavItem href="/user/signout" icon={FaSignOutAlt} label="Wyloguj" active={isActive("/user/signout")} collapsed={collapsed} onNavigate={onNavigate} />
+        <NavItem
+          href="/user/signin"
+          icon={FaSignInAlt}
+          label="Zaloguj"
+          active={isActive("/user/signin")}
+          collapsed={collapsed}
+          onNavigate={onNavigate}
+        />
+        <NavItem
+          href="/user/register"
+          icon={FaUserPlus}
+          label="Rejestracja"
+          active={isActive("/user/register")}
+          collapsed={collapsed}
+          onNavigate={onNavigate}
+        />
+
+        {/* --- NOWA POZYCJA --- */}
+        <NavItem
+          href="/o-aplikacji"
+          icon={FaInfoCircle}
+          label="O aplikacji"
+          active={isActive("/o-aplikacji")}
+          collapsed={collapsed}
+          onNavigate={onNavigate}
+        />
+
+        <NavItem
+          href="/user/profile"
+          icon={FaUser}
+          label="Profil"
+          active={isActive("/user/profile")}
+          collapsed={collapsed}
+          onNavigate={onNavigate}
+        />
+        <NavItem
+          href="/user/signout"
+          icon={FaSignOutAlt}
+          label="Wyloguj"
+          active={isActive("/user/signout")}
+          collapsed={collapsed}
+          onNavigate={onNavigate}
+        />
 
         <SectionTitle collapsed={collapsed}>Aplikacja</SectionTitle>
-        <NavItem href="/dashboard" icon={FaThLarge} label="Dashboard" active={isActive("/dashboard")} collapsed={collapsed} onNavigate={onNavigate} />
-        <NavItem href="/quiz" icon={FaQuestionCircle} label="Quizy" active={isActive("/quiz")} collapsed={collapsed} onNavigate={onNavigate} />
-        <NavItem href="/quiz/manage" icon={FaEdit} label="Panel tworzenia" active={isActive("/quiz/manage")} collapsed={collapsed} onNavigate={onNavigate} />
+        <NavItem
+          href="/dashboard"
+          icon={FaThLarge}
+          label="Dashboard"
+          active={isActive("/dashboard")}
+          collapsed={collapsed}
+          onNavigate={onNavigate}
+        />
+        <NavItem
+          href="/quiz"
+          icon={FaQuestionCircle}
+          label="Quizy"
+          active={isActive("/quiz")}
+          collapsed={collapsed}
+          onNavigate={onNavigate}
+        />
+        <NavItem
+          href="/quiz/manage"
+          icon={FaEdit}
+          label="Panel tworzenia"
+          active={isActive("/quiz/manage")}
+          collapsed={collapsed}
+          onNavigate={onNavigate}
+        />
       </nav>
     </div>
   );

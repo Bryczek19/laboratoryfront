@@ -61,6 +61,21 @@ export default function ProtectedShell({ children }) {
             <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-950/40 p-3 text-xs text-zinc-400">
               Tip: w quizach możesz dodać pytania typu <b>single</b>, <b>multi</b>, <b>fill</b>, <b>match</b>.
             </div>
+
+            {/* O APLIKACJI */}
+            <div className="mt-3 rounded-xl border border-zinc-800 bg-zinc-950/40 p-3 text-xs text-zinc-400">
+              <div className="mb-1 text-xs font-semibold text-zinc-200">O aplikacji</div>
+
+              <p className="leading-relaxed">
+                Wykonał: <b className="text-zinc-100">Konrad Bryk</b>, indeks{" "}
+                <b className="text-zinc-100">15234</b>.
+              </p>
+
+              <p className="mt-2 leading-relaxed">
+                <b className="text-zinc-100">Quizy</b> pozwalają tworzyć i rozwiązywać testy
+                (single/multi/fill/match), zatwierdzać odpowiedzi i wyświetlać wynik końcowy.
+              </p>
+            </div>
           </aside>
 
           {/* CONTENT */}

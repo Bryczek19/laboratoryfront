@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 
 export default function SignInPage() {
@@ -25,12 +25,19 @@ export default function SignInPage() {
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+
+      // jeśli mail niezweryfikowany -> wyloguj i pokaż stronę verify
+      if (!cred.user.emailVerified) {
+        const showEmail = cred.user.email || email;
+        await signOut(auth);
+        router.replace(`/user/verify?email=${encodeURIComponent(showEmail)}`);
+        return;
+      }
 
       // ważne: router.replace, żeby user nie cofał do /signin po zalogowaniu
       router.replace(returnUrl);
     } catch (err) {
-      // prosta, czytelna obsługa błędu
       setError(err?.message || "Błąd logowania");
       setLoading(false);
     }
@@ -60,11 +67,7 @@ export default function SignInPage() {
           autoComplete="current-password"
         />
 
-        {error && (
-          <p className="text-red-500 text-sm">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <button
           data-testid="signin-submit"
