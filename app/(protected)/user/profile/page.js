@@ -5,6 +5,8 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useAuth } from "@/app/context/AuthContext";
 import { db } from "@/app/lib/firebase";
 
+export const dynamic = "force-dynamic";
+
 export default function ProfilePage() {
   const { user, loading } = useAuth();
 
@@ -15,18 +17,10 @@ export default function ProfilePage() {
   const [info, setInfo] = useState("");
   const [error, setError] = useState("");
 
-  // 🔄 Loader
-  if (loading) {
-    return <p>Ładowanie profilu...</p>;
-  }
-
-  // 🔐 Brak użytkownika (teoretycznie nie powinno się zdarzyć w protected)
-  if (!user) {
-    return <p>Nie jesteś zalogowany.</p>;
-  }
-
-  // 📥 Odczyt danych profilu
   useEffect(() => {
+    if (loading) return;
+    if (!user?.uid) return;
+
     const loadProfile = async () => {
       try {
         const ref = doc(db, "users", user.uid);
@@ -45,14 +39,12 @@ export default function ProfilePage() {
     };
 
     loadProfile();
-  }, [user.uid]);
+  }, [loading, user?.uid]);
 
-  // 💾 Zapis profilu
   const saveProfile = async () => {
     setError("");
     setInfo("");
 
-    // ✅ Walidacja kodu pocztowego
     if (!/^\d{2}-\d{3}$/.test(zip)) {
       setError("Kod pocztowy musi mieć format 00-000");
       return;
@@ -69,7 +61,7 @@ export default function ProfilePage() {
           zip,
           updatedAt: Date.now(),
         },
-        { merge: true } // 🔥 bardzo ważne
+        { merge: true }
       );
 
       setInfo("Zapisano dane ✔");
@@ -80,6 +72,9 @@ export default function ProfilePage() {
     }
   };
 
+  if (loading) return <p>Ładowanie profilu...</p>;
+  if (!user) return <p>Nie jesteś zalogowany.</p>;
+
   return (
     <div className="max-w-xl">
       <h1 className="text-2xl font-bold mb-4">Profile</h1>
@@ -89,31 +84,11 @@ export default function ProfilePage() {
       </p>
 
       <div className="flex flex-col gap-3">
-        <input
-          className="border p-2"
-          placeholder="Ulica"
-          value={street}
-          onChange={(e) => setStreet(e.target.value)}
-        />
+        <input className="border p-2" placeholder="Ulica" value={street} onChange={(e) => setStreet(e.target.value)} />
+        <input className="border p-2" placeholder="Miasto" value={city} onChange={(e) => setCity(e.target.value)} />
+        <input className="border p-2" placeholder="Kod pocztowy (00-000)" value={zip} onChange={(e) => setZip(e.target.value)} />
 
-        <input
-          className="border p-2"
-          placeholder="Miasto"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-        />
-
-        <input
-          className="border p-2"
-          placeholder="Kod pocztowy (00-000)"
-          value={zip}
-          onChange={(e) => setZip(e.target.value)}
-        />
-
-        <button
-          onClick={saveProfile}
-          className="bg-gray-900 text-white px-4 py-2"
-        >
+        <button onClick={saveProfile} className="bg-gray-900 text-white px-4 py-2">
           Zapisz adres
         </button>
 

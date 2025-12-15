@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+
+
+export const dynamic = "force-dynamic";
 
 function Card({ title, desc, href }) {
   return (
@@ -34,10 +39,16 @@ export default function DashboardPage() {
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="text-sm font-semibold text-slate-900">Szybkie akcje</div>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Link className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50" href="/quiz/manage">
+          <Link
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50"
+            href="/quiz/manage"
+          >
             + Nowy quiz
           </Link>
-          <Link className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50" href="/quiz">
+          <Link
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50"
+            href="/quiz"
+          >
             Rozwiąż quiz
           </Link>
         </div>

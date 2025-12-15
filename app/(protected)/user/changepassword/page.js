@@ -1,103 +1,106 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
-import { db } from "@/app/lib/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth";
 
-export default function ProfilePage() {
+export const dynamic = "force-dynamic";
+
+export default function ChangePasswordPage() {
   const { user, loading } = useAuth();
 
-  const [street, setStreet] = useState("");
-  const [city, setCity] = useState("");
-  const [zipCode, setZipCode] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newPassword2, setNewPassword2] = useState("");
 
   const [info, setInfo] = useState("");
   const [error, setError] = useState("");
-  const [dataLoading, setDataLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  // 🔹 ODCZYT danych z Firestore
-  useEffect(() => {
-    if (!user) return;
-
-    const loadProfile = async () => {
-      try {
-        const ref = doc(db, "users", user.uid);
-        const snap = await getDoc(ref);
-
-        if (snap.exists()) {
-          const data = snap.data();
-          setStreet(data.address?.street || "");
-          setCity(data.address?.city || "");
-          setZipCode(data.address?.zipCode || "");
-        }
-      } catch (e) {
-        setError("Błąd odczytu danych z Firestore");
-      } finally {
-        setDataLoading(false);
-      }
-    };
-
-    loadProfile();
-  }, [user]);
-
-  // 🔹 ZAPIS danych do Firestore
   const onSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setInfo("");
+    setError("");
+
+    if (!user?.email) {
+      setError("Brak użytkownika / email.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError("Nowe hasło musi mieć min. 6 znaków.");
+      return;
+    }
+    if (newPassword !== newPassword2) {
+      setError("Nowe hasła nie są takie same.");
+      return;
+    }
 
     try {
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        address: {
-          street,
-          city,
-          zipCode,
-        },
-      });
+      setSaving(true);
 
-      setInfo("Dane zapisane poprawnie ✅");
-    } catch (e) {
-      setError("Błąd zapisu danych");
+      // reauth
+      const cred = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, cred);
+
+      // update
+      await updatePassword(user, newPassword);
+
+      setInfo("Hasło zmienione ✅");
+      setCurrentPassword("");
+      setNewPassword("");
+      setNewPassword2("");
+    } catch (err) {
+      console.error(err);
+      setError(err?.message || "Błąd zmiany hasła.");
+    } finally {
+      setSaving(false);
     }
   };
 
-  if (loading || dataLoading) return <p>Ładowanie profilu...</p>;
+  if (loading) return <p>Ładowanie...</p>;
+  if (!user) return <p>Nie jesteś zalogowany.</p>;
 
   return (
     <div className="max-w-md">
-      <h1 className="text-2xl font-bold mb-4">Profil użytkownika</h1>
+      <h1 className="text-2xl font-bold mb-4">Zmień hasło</h1>
 
-      <p className="mb-3 text-sm text-gray-400">
+      <p className="mb-3 text-sm text-gray-500">
         Email: <b>{user.email}</b>
       </p>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-3">
         <input
           className="border p-2"
-          placeholder="Ulica"
-          value={street}
-          onChange={(e) => setStreet(e.target.value)}
-        />
-        <input
-          className="border p-2"
-          placeholder="Miasto"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-        />
-        <input
-          className="border p-2"
-          placeholder="Kod pocztowy"
-          value={zipCode}
-          onChange={(e) => setZipCode(e.target.value)}
+          placeholder="Aktualne hasło"
+          type="password"
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
+          autoComplete="current-password"
         />
 
-        {error && <p className="text-red-500">{error}</p>}
-        {info && <p className="text-green-500">{info}</p>}
+        <input
+          className="border p-2"
+          placeholder="Nowe hasło"
+          type="password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          autoComplete="new-password"
+        />
 
-        <button className="border p-2 bg-gray-900 text-white">
-          Zapisz dane
+        <input
+          className="border p-2"
+          placeholder="Powtórz nowe hasło"
+          type="password"
+          value={newPassword2}
+          onChange={(e) => setNewPassword2(e.target.value)}
+          autoComplete="new-password"
+        />
+
+        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {info && <p className="text-green-600 text-sm">{info}</p>}
+
+        <button className="border p-2 bg-gray-900 text-white disabled:opacity-60" disabled={saving} type="submit">
+          {saving ? "Zmieniam..." : "Zmień hasło"}
         </button>
       </form>
     </div>

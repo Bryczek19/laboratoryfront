@@ -2,9 +2,12 @@
 
 import { useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { useAuth } from "../context/AuthContext";
 
-export default function ProtectedLayout({ children }) {
+export const dynamic = "force-dynamic";
+
+function ProtectedInner({ children }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -21,5 +24,13 @@ export default function ProtectedLayout({ children }) {
   if (loading) return <div className="p-6">Ładowanie...</div>;
   if (!user) return null;
 
-  return children;
+  return <>{children}</>;
+}
+
+export default function ProtectedLayout({ children }) {
+  return (
+    <Suspense fallback={<div className="p-6">Ładowanie...</div>}>
+      <ProtectedInner>{children}</ProtectedInner>
+    </Suspense>
+  );
 }

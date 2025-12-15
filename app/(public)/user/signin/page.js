@@ -2,22 +2,25 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 
-export default function SignInPage() {
+export const dynamic = "force-dynamic";
+
+function SignInInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const returnUrl = useMemo(() => {
+    return searchParams.get("returnUrl") || "/dashboard";
+  }, [searchParams]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // domyślnie po logowaniu lądujemy na /dashboard
-  const returnUrl = searchParams.get("returnUrl") || "/dashboard";
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -27,7 +30,6 @@ export default function SignInPage() {
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
 
-      // jeśli mail niezweryfikowany -> wyloguj i pokaż stronę verify
       if (!cred.user.emailVerified) {
         const showEmail = cred.user.email || email;
         await signOut(auth);
@@ -35,7 +37,6 @@ export default function SignInPage() {
         return;
       }
 
-      // ważne: router.replace, żeby user nie cofał do /signin po zalogowaniu
       router.replace(returnUrl);
     } catch (err) {
       setError(err?.message || "Błąd logowania");
@@ -86,5 +87,13 @@ export default function SignInPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Ładowanie...</div>}>
+      <SignInInner />
+    </Suspense>
   );
 }

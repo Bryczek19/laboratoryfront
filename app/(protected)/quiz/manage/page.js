@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -27,15 +28,17 @@ export default function QuizManagePage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Zarządzanie quizami (Temat 4)</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        Zarządzanie quizami
+      </h1>
 
       <div className="flex gap-2 mb-4">
-        <button className="border px-3 py-2" onClick={createQuiz} data-testid="create-quiz">
+        <button className="border px-3 py-2" onClick={createQuiz}>
           + Nowy quiz
         </button>
 
         <Link className="underline px-3 py-2" href="/quiz">
-          Przejdź do rozwiązywania
+          Powrót do quizów
         </Link>
       </div>
 
@@ -43,13 +46,19 @@ export default function QuizManagePage() {
         {quizzes.map((q) => (
           <div key={q.id} className="border rounded p-3">
             <div className="font-semibold">{q.title}</div>
+
             <div className="flex gap-3 mt-2">
               <Link className="underline" href={`/quiz/manage/${q.id}`}>
                 Edytuj
               </Link>
-              <button className="underline" onClick={() => removeQuiz(q.id)}>
+
+              <button
+                className="underline"
+                onClick={() => removeQuiz(q.id)}
+              >
                 Usuń
               </button>
+
               <Link className="underline" href={`/quiz/${q.id}`}>
                 Rozwiąż
               </Link>
@@ -57,7 +66,9 @@ export default function QuizManagePage() {
           </div>
         ))}
 
-        {quizzes.length === 0 && <p>Brak quizów. Kliknij “Nowy quiz”.</p>}
+        {quizzes.length === 0 && (
+          <p>Brak quizów.</p>
+        )}
       </div>
     </div>
   );
