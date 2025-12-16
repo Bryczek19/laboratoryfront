@@ -1,29 +1,35 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
-import { useParams } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { loadQuizzes } from "@/app/(protected)/quiz/_lib/store";
+import { loadQuizzes } from "./_lib/store";
 
-export default function QuizPage() {
-  const { id } = useParams();
-  const [quiz, setQuiz] = useState(null);
+export default function QuizListPage() {
+  const [quizzes, setQuizzes] = useState([]);
 
   useEffect(() => {
-    const quizzes = loadQuizzes();
-    const found = quizzes.find((q) => q.id === id);
-    setQuiz(found || null);
-  }, [id]);
-
-  if (!quiz) {
-    return <p>Quiz nie istnieje lub został usunięty.</p>;
-  }
+    setQuizzes(loadQuizzes());
+  }, []);
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">{quiz.title}</h1>
-      <p>Liczba pytań: {quiz.questions?.length ?? 0}</p>
+      <h1 className="text-2xl font-bold mb-4">Quizy</h1>
+
+      <Link className="underline" href="/quiz/manage">
+        Panel tworzenia/edycji (Temat 4)
+      </Link>
+
+      <div className="mt-4 flex flex-col gap-3">
+        {quizzes.map((q) => (
+          <div key={q.id} className="border rounded p-3">
+            <div className="font-semibold">{q.title}</div>
+            <Link className="underline" href={`/quiz/${q.id}`} data-testid={`open-quiz-${q.id}`}>
+              Start
+            </Link>
+          </div>
+        ))}
+        {quizzes.length === 0 && <p>Brak quizów. Wejdź w panel i utwórz pierwszy.</p>}
+      </div>
     </div>
   );
 }
